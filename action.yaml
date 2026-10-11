@@ -1,0 +1,21 @@
+name: Lock Action
+description: A GitHub action to hold a lock shared by every runner on a machine
+inputs:
+  name:
+    required: true
+    description: Name of the lock
+  run:
+    required: false
+    description: Bash script to run while holding the lock
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - name: Acquire lock
+      shell: bash
+      run: bash "${LOCK_ACTION_PATH//\\//}/lock.sh" ${{ inputs.run != '' && 'run' || 'acquire' }}
+      env:
+        LOCK_ACTION_PATH: ${{ github.action_path }}
+        LOCK_NAME: ${{ inputs.name }}
+        LOCK_RUN: ${{ inputs.run }}

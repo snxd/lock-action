@@ -1,0 +1,16 @@
+name: Lock Release Action
+description: A GitHub action to release a lock that an earlier step of the job acquired
+inputs:
+  name:
+    required: true
+    description: Name of the lock
+
+runs:
+  using: composite
+  steps:
+    - name: Release lock
+      shell: bash
+      run: bash "${LOCK_ACTION_PATH//\\//}/../lock.sh" release
+      env:
+        LOCK_ACTION_PATH: ${{ github.action_path }}
+        LOCK_NAME: ${{ inputs.name }}
