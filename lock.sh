@@ -72,7 +72,13 @@ process_id() {
 job_process() {
   local pid=$$ process parent stat fields
   if [ "$os" = windows ]; then
-    powershell_run "\$process = Get-CimInstance Win32_Process -Filter ('ProcessId=' + \$PID); \
+    # The shells are followed by their own ids up to the first one that Windows started
+    while parent="$(cat "/proc/$pid/ppid" 2> /dev/null)" && [ "$parent" != "$pid" ] \
+      && [ -e "/proc/$parent/winpid" ]; do
+      pid="$parent"
+    done
+    pid="$(cat "/proc/$pid/winpid")"
+    powershell_run "\$process = Get-CimInstance Win32_Process -Filter 'ProcessId=$pid'; \
       for (\$depth = 0; \$process -and \$process.Name -ne 'Runner.Worker.exe' -and \$depth -lt 32; \$depth++) { \
         \$process = Get-CimInstance Win32_Process -Filter ('ProcessId=' + \$process.ParentProcessId) }; \
       if (\$process -and \$process.Name -eq 'Runner.Worker.exe') { \
