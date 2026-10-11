@@ -17,12 +17,20 @@ jobs:
         run: shellcheck lock.sh test/test.sh
 
   test:
-    name: Test - ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.runs-on }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - name: Test - Ubuntu
+            runs-on: ubuntu-latest
+
+          - name: Test - macOS
+            runs-on: macos-latest
+
+          - name: Test - Windows
+            runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v7
