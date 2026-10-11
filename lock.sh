@@ -137,7 +137,8 @@ remove_stale() {
   fi
   owner="$(holder)"
   if [ -n "$owner" ]; then
-    if ended "$owner"; then
+    # The holder is read again, as it can release the lock and end while it is being checked
+    if ended "$owner" && [ "$(holder)" = "$owner" ]; then
       rm -rf "$lock"
       removed=0
     fi
