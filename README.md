@@ -50,6 +50,31 @@ Without `run` the lock is held until `snxd/lock-action/release` runs or the job 
     name: rustup
 ```
 
+*Running a PowerShell step under a lock*
+
+The script in `run` is always run by Bash. A step that needs PowerShell holds the lock across
+steps instead.
+
+```yaml
+- name: Acquire choco lock
+  uses: snxd/lock-action@main
+  with:
+    name: choco
+
+- name: Install packages
+  shell: powershell
+  run: |
+    choco upgrade --no-progress -y `
+      7zip `
+      cmake
+
+- name: Release choco lock
+  if: always()
+  uses: snxd/lock-action/release@main
+  with:
+    name: choco
+```
+
 ## Behavior
 
 * Locks are kept in `~/.lock-action`, so runners share them when they run as the same user.
@@ -57,5 +82,5 @@ Without `run` the lock is held until `snxd/lock-action/release` runs or the job 
   nothing, which makes `if: always()` safe on the release step.
 * A lock whose job has ended is taken over by the next job that waits for it, so a cancelled job
   does not leave the lock stuck.
-* Linux, macOS, and Windows are supported. Windows needs Git Bash, and jobs that run in a
-  container are not supported.
+* Linux, macOS, and Windows are supported. Windows needs Git Bash and Windows PowerShell, which
+  the action uses itself, and jobs that run in a container are not supported.
